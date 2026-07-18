@@ -220,7 +220,6 @@ body {
 
 #root {
   width: 100%;
-  max-width: 380px;
 }
 
 .card {
