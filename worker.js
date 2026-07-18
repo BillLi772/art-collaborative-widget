@@ -224,9 +224,7 @@ body {
 }
 
 .card {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  background: transparent;
   padding: 24px;
   opacity: 0;
   transform: translateY(8px);
