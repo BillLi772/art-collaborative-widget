@@ -243,7 +243,7 @@ body {
 }
 
 .error-line {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--ink);
   margin: 0;
@@ -268,17 +268,18 @@ body {
 }
 
 .eyebrow {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 300;
+  line-height: 1.6;
   color: var(--muted);
-  margin: 0 0 4px;
+  margin: 0;
 }
 
 .title {
   font-family: 'Poppins', sans-serif;
-  font-weight: 400;
-  font-size: 19px;
-  line-height: 1.4;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
   margin: 0 0 10px;
 }
@@ -294,10 +295,10 @@ body {
 }
 
 .summary {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--ink);
-  margin: 0 0 14px;
+  margin: 0 0 16px;
 }
 
 .rule {
@@ -305,26 +306,26 @@ body {
   height: 1px;
   background: var(--line);
   border: none;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
 }
 
 .date-line {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   margin: 0 0 4px;
 }
 
 .venue-name {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   margin: 0;
 }
 
 .address {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--muted);
-  margin: 0 0 16px;
+  margin: 0 0 20px;
 }
 
 .address a {
@@ -348,12 +349,12 @@ body {
   background: transparent;
   color: var(--ink);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 300;
-  letter-spacing: 0.02em;
-  padding: 12px 22px;
+  letter-spacing: 0.32px;
+  padding: 20px 28px;
   border: 1px solid var(--ink);
-  border-radius: 6px;
+  border-radius: 6.4px;
   transition: background 150ms ease, color 150ms ease;
 }
 
@@ -365,7 +366,7 @@ body {
 .cal-link {
   color: var(--muted);
   text-decoration: underline;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 300;
   transition: color 150ms ease;
 }
