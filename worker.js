@@ -215,7 +215,7 @@ body {
   color: var(--ink);
   display: flex;
   justify-content: center;
-  padding: 14px 10px;
+  padding: 0;
 }
 
 #root {
@@ -224,7 +224,7 @@ body {
 
 .card {
   background: transparent;
-  padding: 24px;
+  padding: 0;
   opacity: 0;
   transform: translateY(8px);
   animation: rise 450ms ease-out forwards;
@@ -236,10 +236,6 @@ body {
 
 @keyframes rise {
   to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 420px) {
-  .card { padding: 18px; }
 }
 
 .error-line {
