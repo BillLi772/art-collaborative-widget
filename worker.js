@@ -177,7 +177,11 @@ ${CSS}
 <body>
 <div id="root">
   <div class="card" id="card">
-    <p class="loading">Loading next gathering…</p>
+    <span class="skeleton" style="width:38%;margin-bottom:14px;"></span>
+    <span class="skeleton" style="width:80%;height:16px;margin-bottom:10px;"></span>
+    <span class="skeleton" style="width:60%;margin-bottom:20px;"></span>
+    <span class="skeleton" style="width:70%;margin-bottom:8px;"></span>
+    <span class="skeleton" style="width:45%;"></span>
   </div>
 </div>
 <script>
@@ -216,14 +220,15 @@ body {
 
 #root {
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
 }
 
 .card {
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(26, 25, 24, 0.03), 0 10px 24px -12px rgba(26, 25, 24, 0.10);
   opacity: 0;
   transform: translateY(8px);
   animation: rise 450ms ease-out forwards;
@@ -237,26 +242,44 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 400px) {
-  .card { padding: 16px; }
+@media (max-width: 420px) {
+  .card { padding: 18px; }
 }
 
-.loading, .error-line {
+.error-line {
   font-size: 13px;
   color: var(--muted);
   margin: 0;
 }
 
+.skeleton {
+  display: block;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--line) 25%, #F1EFED 37%, var(--line) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
 .eyebrow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
 
 .eyebrow .dot {
@@ -265,112 +288,171 @@ body {
   border-radius: 50%;
   background: var(--accent);
   flex: none;
+  box-shadow: 0 0 0 3px rgba(94, 88, 88, 0.10);
 }
 
 .title {
   font-family: 'Poppins', sans-serif;
   font-style: normal;
   font-weight: 500;
-  font-size: clamp(17px, 4.5vw, 20px);
+  font-size: clamp(18px, 4.5vw, 21px);
   line-height: 1.35;
-  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+  margin: 0 0 7px;
 }
 
 .title a {
   color: var(--ink);
   text-decoration: none;
+  background-image: linear-gradient(var(--accent-dark), var(--accent-dark));
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0 1px;
+  transition: background-size 200ms ease, color 150ms ease;
 }
 
 .title a:hover {
   color: var(--accent-dark);
+  background-size: 100% 1px;
 }
 
 .summary {
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 12.5px;
+  line-height: 1.55;
   color: var(--muted);
-  margin: 0 0 12px;
+  margin: 0 0 16px;
 }
 
 .rule {
-  width: 30px;
+  width: 28px;
   height: 1px;
   background: var(--line);
   border: none;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.meta-row:last-of-type { margin-bottom: 18px; }
+
+.meta-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+  color: var(--muted);
 }
 
 .date-line {
   font-size: 13px;
   font-weight: 500;
-  margin: 0 0 10px;
+  margin: 0;
 }
 
+.venue-block { line-height: 1.5; }
+
 .venue-name {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin: 0 0 3px;
+  margin: 0 0 2px;
 }
 
 .address {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
-  margin: 0 0 16px;
+  margin: 0;
 }
 
 .address a {
   color: var(--muted);
   text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 2px;
+}
+
+.address a:hover {
+  color: var(--ink);
+  text-decoration-color: currentColor;
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
   flex-wrap: wrap;
 }
 
 .rsvp-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   background: var(--accent);
   color: var(--paper);
   text-decoration: none;
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 9px 14px;
+  padding: 10px 16px;
   border: 1px solid var(--accent);
-  border-radius: 6px;
-  transition: background 150ms ease, border-color 150ms ease;
+  border-radius: 7px;
+  box-shadow: 0 1px 1px rgba(26, 25, 24, 0.05);
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
 }
 
 .rsvp-btn:hover {
   background: var(--accent-dark);
   border-color: var(--accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px -4px rgba(26, 25, 24, 0.35);
+}
+
+.rsvp-btn:active {
+  transform: translateY(0);
+}
+
+.rsvp-btn svg {
+  transition: transform 150ms ease;
+}
+
+.rsvp-btn:hover svg {
+  transform: translateX(2px);
 }
 
 .cal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   color: var(--muted);
   text-decoration: underline;
-  font-size: 11px;
+  text-decoration-color: var(--line);
+  text-underline-offset: 2px;
+  font-size: 11.5px;
   font-weight: 400;
+  transition: color 150ms ease;
 }
 
 .cal-link:hover {
   color: var(--accent-dark);
+  text-decoration-color: currentColor;
 }
 
 a:focus-visible, button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+  border-radius: 3px;
 }
 
 .also-ahead {
-  margin-top: 16px;
-  padding-top: 12px;
+  margin-top: 20px;
+  padding-top: 14px;
   border-top: 1px solid var(--line);
 }
 
@@ -380,23 +462,35 @@ a:focus-visible, button:focus-visible {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 0 0 8px;
-}
-
-.also-row {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-  font-size: 12px;
   margin: 0 0 6px;
 }
 
-.also-row:last-child { margin-bottom: 0; }
+.also-row {
+  display: block;
+  margin: 0 -8px;
+  border-radius: 6px;
+  transition: background 150ms ease;
+}
+
+.also-row:hover {
+  background: var(--line-soft, rgba(94, 88, 88, 0.06));
+}
+
+.also-row a {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  text-decoration: none;
+  color: var(--ink);
+}
 
 .also-date {
   color: var(--muted);
   flex: none;
-  width: 44px;
+  width: 42px;
+  font-size: 11.5px;
 }
 
 .also-title {
@@ -404,12 +498,7 @@ a:focus-visible, button:focus-visible {
   font-weight: 500;
 }
 
-.also-title a {
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.also-title a:hover {
+.also-row:hover .also-title {
   color: var(--accent-dark);
 }
 
@@ -421,7 +510,7 @@ a:focus-visible, button:focus-visible {
 }
 
 .empty-sub {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
   margin: 0;
 }
@@ -523,12 +612,19 @@ const CLIENT_JS = `
       var dateStr = p ? formatShortDate(p) : '';
       return '' +
         '<div class="also-row">' +
-          '<span class="also-date">' + escapeHtml(dateStr) + '</span>' +
-          '<span class="also-title"><a href="' + escapeHtml(ev.url) + '" target="_blank" rel="noopener">' + escapeHtml(ev.title) + '</a></span>' +
+          '<a href="' + escapeHtml(ev.url) + '" target="_blank" rel="noopener">' +
+            '<span class="also-date">' + escapeHtml(dateStr) + '</span>' +
+            '<span class="also-title">' + escapeHtml(ev.title) + '</span>' +
+          '</a>' +
         '</div>';
     }).join('');
     return '<div class="also-ahead"><h3>Also Ahead</h3>' + rows + '</div>';
   }
+
+  var ICON_CALENDAR = '<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="16" y1="3" x2="16" y2="7"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+  var ICON_PIN = '<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
+  var ICON_ARROW = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+  var ICON_CAL_PLUS = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="12" y1="13" x2="12" y2="18"></line><line x1="9.5" y1="15.5" x2="14.5" y2="15.5"></line></svg>';
 
   function renderNext(ev, rest) {
     var startP = parseLocal(ev.start);
@@ -546,7 +642,7 @@ const CLIENT_JS = `
       : escapeHtml(ev.address);
 
     var calHtml = (startP && endP)
-      ? '<a class="cal-link" href="' + gcalUrl(ev, startP, endP) + '" target="_blank" rel="noopener">Add to calendar</a>'
+      ? '<a class="cal-link" href="' + gcalUrl(ev, startP, endP) + '" target="_blank" rel="noopener">' + ICON_CAL_PLUS + 'Add to calendar</a>'
       : '';
 
     return '' +
@@ -554,11 +650,10 @@ const CLIENT_JS = `
       '<h2 class="title"><a href="' + escapeHtml(ev.url) + '" target="_blank" rel="noopener">' + escapeHtml(ev.title) + '</a></h2>' +
       summaryHtml +
       '<hr class="rule">' +
-      '<p class="date-line">' + escapeHtml(dateLine) + '</p>' +
-      '<p class="venue-name">' + escapeHtml(ev.venueName) + '</p>' +
-      '<p class="address">' + addressHtml + '</p>' +
+      '<div class="meta-row">' + ICON_CALENDAR + '<p class="date-line">' + escapeHtml(dateLine) + '</p></div>' +
+      '<div class="meta-row">' + ICON_PIN + '<div class="venue-block"><p class="venue-name">' + escapeHtml(ev.venueName) + '</p><p class="address">' + addressHtml + '</p></div></div>' +
       '<div class="actions">' +
-        '<a class="rsvp-btn" href="' + escapeHtml(ev.url) + '" target="_blank" rel="noopener">RSVP on Eventbrite</a>' +
+        '<a class="rsvp-btn" href="' + escapeHtml(ev.url) + '" target="_blank" rel="noopener">RSVP on Eventbrite' + ICON_ARROW + '</a>' +
         calHtml +
       '</div>' +
       renderAlsoAhead(rest);
