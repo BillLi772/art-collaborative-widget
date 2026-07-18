@@ -76,18 +76,24 @@ Add a **Code Block** to the page and paste:
 ```html
 <iframe
   src="https://<your-worker>.workers.dev/"
-  width="100%"
-  height="320"
-  style="border: 0; max-width: 420px;"
+  width="420"
+  height="400"
+  style="border: 0; max-width: 100%;"
   loading="lazy"
   title="The Art Collaborative — Next Gathering">
 </iframe>
 ```
 
-The card is a compact ~380px-wide block, not a full-width page — the
-`max-width` on the iframe keeps it from stretching across a wide Squarespace
-column. Adjust `height` up a little if the event summary line wraps to two
-lines.
+The card is a ~380px-wide block, not a full-width page. Set the iframe's
+`width`/`height` explicitly (rather than `width="100%"`) and size the
+Squarespace code block to match — don't leave it at Squarespace's default
+block size, or you'll get empty space around the card. If the code block
+sits in a multi-column row, give the widget its own row instead; Squarespace
+stretches blocks to match the tallest sibling in a row, which can leave a
+gap below a short block like this one.
+
+Adjust `height` up a little if the event summary line wraps to more lines
+than usual.
 
 Replace `<your-worker>.workers.dev` with the actual deployed Worker URL (or a
 custom route, if one is set up later).
