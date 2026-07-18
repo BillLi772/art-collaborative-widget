@@ -77,17 +77,17 @@ Add a **Code Block** to the page and paste:
 <iframe
   src="https://<your-worker>.workers.dev/"
   width="100%"
-  height="360"
-  style="border: 0; max-width: 400px;"
+  height="320"
+  style="border: 0; max-width: 420px;"
   loading="lazy"
   title="The Art Collaborative — Next Gathering">
 </iframe>
 ```
 
-The card is a compact ~360px-wide block, not a full-width page — the
+The card is a compact ~380px-wide block, not a full-width page — the
 `max-width` on the iframe keeps it from stretching across a wide Squarespace
-column. Adjust `height` up a little if the "Also Ahead" section is showing
-two rows.
+column. Adjust `height` up a little if the event summary line wraps to two
+lines.
 
 Replace `<your-worker>.workers.dev` with the actual deployed Worker URL (or a
 custom route, if one is set up later).

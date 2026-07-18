@@ -393,25 +393,22 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: var(--accent);
-  color: var(--paper);
+  background: transparent;
+  color: var(--muted);
   text-decoration: none;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 10px 16px;
-  border: 1px solid var(--accent);
-  border-radius: 7px;
-  box-shadow: 0 1px 1px rgba(26, 25, 24, 0.05);
-  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  padding: 10px 20px;
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  transition: background 150ms ease, color 150ms ease, transform 150ms ease;
 }
 
 .rsvp-btn:hover {
-  background: var(--accent-dark);
-  border-color: var(--accent-dark);
+  background: var(--muted);
+  color: var(--paper);
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px -4px rgba(26, 25, 24, 0.35);
 }
 
 .rsvp-btn:active {
@@ -448,58 +445,6 @@ a:focus-visible, button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 3px;
-}
-
-.also-ahead {
-  margin-top: 20px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-}
-
-.also-ahead h3 {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 6px;
-}
-
-.also-row {
-  display: block;
-  margin: 0 -8px;
-  border-radius: 6px;
-  transition: background 150ms ease;
-}
-
-.also-row:hover {
-  background: var(--line-soft, rgba(94, 88, 88, 0.06));
-}
-
-.also-row a {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-  padding: 6px 8px;
-  font-size: 12.5px;
-  text-decoration: none;
-  color: var(--ink);
-}
-
-.also-date {
-  color: var(--muted);
-  flex: none;
-  width: 42px;
-  font-size: 11.5px;
-}
-
-.also-title {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-}
-
-.also-row:hover .also-title {
-  color: var(--accent-dark);
 }
 
 .empty-line {
@@ -549,10 +494,6 @@ const CLIENT_JS = `
 
   function formatDateLong(p) {
     return weekdayFromDate(p.year, p.month, p.day) + ', ' + MONTH_NAMES[p.month - 1] + ' ' + p.day + ', ' + p.year;
-  }
-
-  function formatShortDate(p) {
-    return MONTH_NAMES[p.month - 1].slice(0, 3) + ' ' + p.day;
   }
 
   function formatTime(p) {
@@ -605,28 +546,12 @@ const CLIENT_JS = `
     return '<p class="error-line">' + escapeHtml(message || 'The next gathering could not be loaded right now.') + '</p>';
   }
 
-  function renderAlsoAhead(events) {
-    if (!events.length) return '';
-    var rows = events.map(function (ev) {
-      var p = parseLocal(ev.start);
-      var dateStr = p ? formatShortDate(p) : '';
-      return '' +
-        '<div class="also-row">' +
-          '<a href="' + escapeHtml(ev.url) + '" target="_blank" rel="noopener">' +
-            '<span class="also-date">' + escapeHtml(dateStr) + '</span>' +
-            '<span class="also-title">' + escapeHtml(ev.title) + '</span>' +
-          '</a>' +
-        '</div>';
-    }).join('');
-    return '<div class="also-ahead"><h3>Also Ahead</h3>' + rows + '</div>';
-  }
-
   var ICON_CALENDAR = '<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="16" y1="3" x2="16" y2="7"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
   var ICON_PIN = '<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
   var ICON_ARROW = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
   var ICON_CAL_PLUS = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="12" y1="13" x2="12" y2="18"></line><line x1="9.5" y1="15.5" x2="14.5" y2="15.5"></line></svg>';
 
-  function renderNext(ev, rest) {
+  function renderNext(ev) {
     var startP = parseLocal(ev.start);
     var endP = parseLocal(ev.end);
     var dateLine = startP && endP
@@ -655,8 +580,7 @@ const CLIENT_JS = `
       '<div class="actions">' +
         '<a class="rsvp-btn" href="' + escapeHtml(ev.url) + '" target="_blank" rel="noopener">RSVP on Eventbrite' + ICON_ARROW + '</a>' +
         calHtml +
-      '</div>' +
-      renderAlsoAhead(rest);
+      '</div>';
   }
 
   function render(html) {
@@ -675,7 +599,7 @@ const CLIENT_JS = `
         render(renderEmpty());
         return;
       }
-      render(renderNext(events[0], events.slice(1, 3)));
+      render(renderNext(events[0]));
     })
     .catch(function () {
       render(renderError('The next gathering could not be loaded right now.'));
