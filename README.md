@@ -77,7 +77,7 @@ Add a **Code Block** to the page and paste:
 <iframe
   src="https://<your-worker>.workers.dev/"
   width="100%"
-  height="320"
+  height="400"
   style="border: 0;"
   loading="lazy"
   title="The Art Collaborative — Next Gathering">
