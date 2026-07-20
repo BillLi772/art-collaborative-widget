@@ -268,7 +268,7 @@ body {
   font-weight: 300;
   line-height: 1.6;
   color: var(--muted);
-  margin: 0;
+  margin: 0 0 16px;
 }
 
 .title {
@@ -321,7 +321,7 @@ body {
   font-size: 16px;
   line-height: 1.6;
   color: var(--muted);
-  margin: 0 0 20px;
+  margin: 0 0 32px;
 }
 
 .address a {
@@ -335,9 +335,9 @@ body {
 
 .actions {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 14px;
 }
 
 .rsvp-btn {
