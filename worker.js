@@ -7,7 +7,7 @@ const EVENTBRITE_API = 'https://www.eventbriteapi.com/v3';
 const DEMO_EVENTS = [
   {
     title: 'The Show Behind the Show',
-    url: 'https://www.eventbrite.com/e/the-show-behind-the-show-tickets-000000000000',
+    url: 'https://www.eventbrite.com/o/the-art-collaborative-42441313023',
     summary: 'A behind-the-curtain look at how a Muny production comes together, from first read to opening night.',
     start: '2026-07-23T15:00:00',
     end: '2026-07-23T16:30:00',
@@ -17,7 +17,7 @@ const DEMO_EVENTS = [
   },
   {
     title: 'Clay & Conversation',
-    url: 'https://www.eventbrite.com/e/clay-and-conversation-tickets-000000000001',
+    url: 'https://www.eventbrite.com/o/the-art-collaborative-42441313023',
     summary: 'A relaxed evening of hand-building pottery and gallery talk.',
     start: '2026-09-12T18:00:00',
     end: '2026-09-12T20:00:00',
@@ -27,7 +27,7 @@ const DEMO_EVENTS = [
   },
   {
     title: 'Winter Salon: Small Works',
-    url: 'https://www.eventbrite.com/e/winter-salon-small-works-tickets-000000000002',
+    url: 'https://www.eventbrite.com/o/the-art-collaborative-42441313023',
     summary: '',
     start: '2026-12-05T17:00:00',
     end: '2026-12-05T19:00:00',
