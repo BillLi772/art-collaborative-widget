@@ -46,6 +46,16 @@ export default {
     if (url.pathname === "/api/past") {
       return jsonResponse(await getEvents(env, ctx, demo, "past", noCache));
     }
+    if (url.pathname === "/api/debug-description") {
+      const id = url.searchParams.get("id");
+      try {
+        const res = await ebFetch(`/events/${id}/description/`, env);
+        const html = (res && res.description && res.description.html) || "";
+        return jsonResponse({ ok: true, length: html.length, htmlSample: html.slice(0, 500) });
+      } catch (err) {
+        return jsonResponse({ ok: false, error: String((err && err.message) || err) });
+      }
+    }
     if (url.pathname === "/past") {
       return htmlResponse(page("past"));
     }
