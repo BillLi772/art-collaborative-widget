@@ -262,7 +262,7 @@ function page(mode) {
 <title>${mode === "past" ? "Past Adventures" : "Next Gathering"} - The Art Collaborative</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   /* ------------------------------------------------------------------
      MATCHING JUDITH'S SITE
@@ -273,50 +273,53 @@ function page(mode) {
     --sans:'Poppins', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --serif:'Poppins', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
-    --ink:#1A1A1A;        /* body text */
-    --muted:#6B6B6B;      /* secondary text */
-    --line:#DEDEDE;       /* hairlines */
-    --accent:#1A1A1A;     /* links on hover */
+    /* Measured directly from judithshaw.com: every piece of visible text on
+       the page - nav links, body copy, section labels, button text - is
+       Poppins 300 in #5E5858, with #817A7A used for a lighter label. No
+       bold weights or uppercase micro-labels appear anywhere on the site. */
+    --ink:#5E5858;         /* body text, headings, button border */
+    --muted:#817A7A;       /* secondary text */
+    --line:#DEDEDE;        /* hairlines */
+    --accent:#5E5858;      /* links on hover */
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:transparent}
   /* No card, no border, no fill - the widget is part of the page. */
-  body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;
+  body{font-family:var(--sans);font-weight:300;color:var(--ink);-webkit-font-smoothing:antialiased;
        font-size:16px;line-height:1.6}
 
   /* Full width so it lines up with the paragraph above it. */
   .placard{width:100%;max-width:none;margin:0;padding:0;background:none;border:0}
 
-  .eyebrow{margin:0 0 18px;font-size:12px;font-weight:600;letter-spacing:.16em;
-           text-transform:uppercase;color:var(--muted)}
+  .eyebrow{margin:0 0 18px;font-size:16px;font-weight:300;color:var(--muted)}
 
-  .title{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.3;
+  .title{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.3;
          letter-spacing:0;margin:0}
   .title a{color:inherit;text-decoration:none}
   .title a:hover{text-decoration:underline;text-underline-offset:4px}
 
   .blurb{margin:14px 0 0;font-size:16px;line-height:1.6;color:var(--ink);max-width:60ch}
-  .rule{border:0;border-top:1px solid var(--line);width:100%;margin:26px 0 22px}
+  .rule{border:0;border-top:1px solid var(--ink);width:100%;margin:26px 0 22px}
 
-  .when{margin:0 0 10px;font-size:16px;font-weight:600}
-  .venue{margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .when{margin:0 0 10px;font-size:16px;font-weight:400}
+  .venue{margin:0 0 4px;font-size:13px;font-weight:400;color:var(--muted)}
   .addr{margin:0;font-size:16px;color:var(--muted)}
   .addr a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
   .addr a:hover{color:var(--ink);border-bottom-color:var(--ink)}
 
   .actions{display:flex;align-items:center;gap:26px;margin-top:28px;flex-wrap:wrap}
-  /* Outlined button, matching the "Registration" button on the page. */
-  .btn{display:inline-block;border:1px solid var(--ink);background:none;color:var(--ink);
-       text-decoration:none;font-size:15px;font-weight:500;padding:14px 34px}
+  /* Border color, radius, and padding measured from the page's own
+     "Registration" button. */
+  .btn{display:inline-block;border:1px solid var(--ink);border-radius:6px;background:none;color:var(--ink);
+       text-decoration:none;font-size:16px;font-weight:300;padding:22px 34px}
   .btn:hover{background:var(--ink);color:#fff}
   .cal{font-size:15px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
   .cal:hover{color:var(--ink);border-bottom-color:var(--ink)}
 
   /* empty state */
-  .msg{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.3;margin:0}
+  .msg{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.3;margin:0}
   .sub{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--ink);max-width:60ch}
-  .subhead{margin:26px 0 8px;font-size:12px;font-weight:600;letter-spacing:.16em;
-           text-transform:uppercase;color:var(--muted)}
+  .subhead{margin:26px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
   .setup{margin:0;font-size:15px;color:var(--muted)}
 
   /* past adventures */
@@ -326,15 +329,14 @@ function page(mode) {
   .thumb{width:132px;height:88px;flex:none;object-fit:cover;background:#EFEFEF;display:block}
   .no-thumb{width:132px;height:88px;flex:none;background:#EFEFEF}
   .past-body{min-width:0;padding-top:2px}
-  .past-date{margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:.13em;
-             text-transform:uppercase;color:var(--muted)}
-  .past-title{font-family:var(--serif);font-weight:600;font-size:19px;line-height:1.35;margin:0}
+  .past-date{margin:0 0 6px;font-size:13px;font-weight:400;color:var(--muted)}
+  .past-title{font-family:var(--serif);font-weight:400;font-size:19px;line-height:1.35;margin:0}
   .past-item:hover .past-title{text-decoration:underline;text-underline-offset:4px}
   .past-where{margin:6px 0 0;font-size:15px;color:var(--muted)}
 
   /* boxed live link, same shape as the Registration button */
-  .boxlink{display:inline-block;margin-top:26px;border:1px solid var(--ink);padding:14px 34px;
-           text-decoration:none;color:var(--ink);font-size:15px;font-weight:500}
+  .boxlink{display:inline-block;margin-top:26px;border:1px solid var(--ink);border-radius:6px;padding:22px 34px;
+           text-decoration:none;color:var(--ink);font-size:16px;font-weight:300}
   .boxlink:hover{background:var(--ink);color:#fff}
 
   @media (max-width:600px){
