@@ -42,9 +42,16 @@ cards follow along within about 15 minutes.
 
 ## Gotchas learned the hard way
 
-- The events query must include `expand=venue,logo`. With `expand=venue` alone,
-  every event comes back with the organization's default graphic, so all the
-  past thumbnails render identically. `slim()` prefers `logo.original.url`.
+- Past-adventure thumbnails are intentionally off for now (2026-08-07). Adding
+  `expand=logo` makes every event come back with the organization's default
+  graphic when it has no custom logo of its own, so all the past thumbnails
+  rendered identically - not fixable in this repo. The real per-event photo
+  lives in Eventbrite's Structured Content system (not the legacy
+  `description.html` field, which is empty for these events), which nothing
+  here parses yet. Until then the query only sends `expand=venue`, `slim()`
+  doesn't set `image`, and the widget shows the plain `.no-thumb` box. Once
+  Judith is uploading distinct per-event photos, revisit whether they're
+  reachable via `logo` or need the Structured Content API.
 - Iframe heights are fixed in Squarespace (`390` for `/`, `620` for `/past`)
   because an iframe can't size itself. **If a layout change makes a card
   taller, say so explicitly** — the embed code has to be updated by hand in

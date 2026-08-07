@@ -114,8 +114,8 @@ async function getEvents(env, ctx, demo, mode, noCache) {
   try {
     const query =
       mode === "past"
-        ? "status=ended,completed&order_by=start_desc&expand=venue,logo&page_size=6"
-        : "status=live&order_by=start_asc&expand=venue,logo&page_size=6";
+        ? "status=ended,completed&order_by=start_desc&expand=venue&page_size=6"
+        : "status=live&order_by=start_asc&expand=venue&page_size=6";
 
     // Try the configured organization first. If the token belongs to a
     // different Eventbrite account, that comes back as a 404 rather than an
@@ -195,10 +195,10 @@ function slim(e) {
     venueName: (e.venue && e.venue.name) || "",
     address:
       (e.venue && e.venue.address && e.venue.address.localized_address_display) || "",
-    image:
-      (e.logo && e.logo.original && e.logo.original.url) ||
-      (e.logo && e.logo.url) ||
-      "",
+    // No image field: Eventbrite substitutes the org's default banner for
+    // any event without its own custom logo, so every past adventure ended
+    // up showing the same picture. Leaving this out shows the plain
+    // no-thumb placeholder instead until events have real per-event photos.
   };
 }
 
@@ -334,10 +334,12 @@ function page(mode) {
   .thumb{width:132px;height:88px;flex:none;object-fit:cover;background:#EFEFEF;display:block}
   .no-thumb{width:132px;height:88px;flex:none;background:#EFEFEF}
   .past-body{min-width:0;padding-top:2px}
-  .past-date{margin:0 0 6px;font-size:13px;font-weight:400;color:var(--muted)}
   .past-title{font-family:var(--serif);font-weight:400;font-size:19px;line-height:1.35;margin:0}
   .past-item:hover .past-title{text-decoration:underline;text-underline-offset:4px}
-  .past-where{margin:6px 0 0;font-size:15px;color:var(--muted)}
+  /* Venue on the left, date on the right, sharing one line. */
+  .past-meta{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:6px}
+  .past-where{margin:0;font-size:15px;color:var(--muted)}
+  .past-date{margin:0;font-size:13px;color:var(--muted);white-space:nowrap}
 
   /* boxed live link, same shape as the Registration button */
   /* display:table + margin:auto centers a fit-content element without
@@ -413,9 +415,11 @@ function renderPast(data){
       h+='<a class="past-item" href="'+esc(ev.url)+'" target="_blank" rel="noopener">';
       h+=ev.image?'<img class="thumb" src="'+esc(ev.image)+'" alt="" loading="lazy">':'<span class="no-thumb"></span>';
       h+='<span class="past-body">';
-      h+='<p class="past-date">'+esc(monthYear(ev))+'</p>';
       h+='<p class="past-title">'+esc(ev.title)+'</p>';
-      if(ev.venueName){h+='<p class="past-where">'+esc(ev.venueName)+'</p>';}
+      h+='<div class="past-meta">';
+      h+=ev.venueName?'<span class="past-where">'+esc(ev.venueName)+'</span>':'<span></span>';
+      h+='<span class="past-date">'+esc(monthYear(ev))+'</span>';
+      h+='</div>';
       h+='</span></a>';
     }
     h+='</div>';
