@@ -127,7 +127,19 @@ async function getEvents(env, ctx, demo, mode) {
       orgId = fallbackId;
       res = await ebFetch(`/organizations/${orgId}/events/?${query}`, env);
     }
-    const events = (res.events || []).map(slim);
+    // The "logo" field is the event's hero image, but for events where the
+    // organizer never set a custom one, Eventbrite silently substitutes the
+    // organization's default banner - so every event ends up with the same
+    // picture. The real per-event photo usually lives inline in the event's
+    // description instead, so prefer that when one is present.
+    const events = await Promise.all(
+      (res.events || []).map(async (e) => {
+        const item = slim(e);
+        const descImage = await firstDescriptionImage(e.id, env);
+        if (descImage) item.image = descImage;
+        return item;
+      })
+    );
     const payload = { ok: true, orgUrl: ORG_PAGE, events };
 
     try {
@@ -157,6 +169,27 @@ async function getEvents(env, ctx, demo, mode) {
           ". It likely belongs to a different Eventbrite account."
         : "Could not reach Eventbrite: " + String((err && err.message) || err),
     };
+  }
+}
+
+/** First <img src> in an event's description, if it has one. */
+async function firstDescriptionImage(eventId, env) {
+  try {
+    const res = await ebFetch(`/events/${eventId}/description/`, env);
+    const html = (res && res.description && res.description.html) || "";
+    if (!html) return "";
+    let found = "";
+    await new HTMLRewriter()
+      .on("img", {
+        element(el) {
+          if (!found) found = el.getAttribute("src") || "";
+        },
+      })
+      .transform(new Response(html))
+      .text();
+    return found;
+  } catch (e) {
+    return ""; // Non-fatal: slim() already picked a fallback image.
   }
 }
 
@@ -335,7 +368,9 @@ function page(mode) {
   .past-where{margin:6px 0 0;font-size:15px;color:var(--muted)}
 
   /* boxed live link, same shape as the Registration button */
-  .boxlink{display:inline-block;margin-top:26px;border:1px solid var(--ink);border-radius:6px;padding:22px 34px;
+  /* display:table + margin:auto centers a fit-content element without
+     relying on a wrapping container. */
+  .boxlink{display:table;margin:26px auto 0;border:1px solid var(--ink);border-radius:6px;padding:22px 34px;
            text-decoration:none;color:var(--ink);font-size:16px;font-weight:300}
   .boxlink:hover{background:var(--ink);color:#fff}
 
