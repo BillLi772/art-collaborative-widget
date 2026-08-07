@@ -197,8 +197,8 @@ function slim(e) {
       (e.venue && e.venue.address && e.venue.address.localized_address_display) || "",
     // No image field: Eventbrite substitutes the org's default banner for
     // any event without its own custom logo, so every past adventure ended
-    // up showing the same picture. Leaving this out shows the plain
-    // no-thumb placeholder instead until events have real per-event photos.
+    // up showing the same picture. The past-adventures list is text-only
+    // until events have real per-event photos to show instead.
   };
 }
 
@@ -327,13 +327,12 @@ function page(mode) {
   .subhead{margin:26px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
   .setup{margin:0;font-size:15px;color:var(--muted)}
 
-  /* past adventures */
-  .past-item{display:flex;gap:20px;align-items:flex-start;padding:20px 0;
+  /* past adventures - no thumbnail column, text only (see CLAUDE.md gotcha
+     on why there's no reliable per-event photo to show here yet). */
+  .past-item{display:block;padding:20px 0;
              border-top:1px solid var(--line);text-decoration:none;color:inherit}
   .past-item:first-of-type{border-top:0;padding-top:6px}
-  .thumb{width:132px;height:88px;flex:none;object-fit:cover;background:#EFEFEF;display:block}
-  .no-thumb{width:132px;height:88px;flex:none;background:#EFEFEF}
-  .past-body{min-width:0;padding-top:2px}
+  .past-body{min-width:0}
   .past-title{font-family:var(--serif);font-weight:400;font-size:19px;line-height:1.35;margin:0}
   .past-item:hover .past-title{text-decoration:underline;text-underline-offset:4px}
   /* Venue on the left, date on the right, sharing one line. */
@@ -350,7 +349,6 @@ function page(mode) {
 
   @media (max-width:600px){
     .title,.msg{font-size:22px}
-    .thumb,.no-thumb{width:92px;height:64px}
     .past-title{font-size:17px}
   }
 
@@ -413,7 +411,6 @@ function renderPast(data){
     for(var i=0;i<evs.length;i++){
       var ev=evs[i];
       h+='<a class="past-item" href="'+esc(ev.url)+'" target="_blank" rel="noopener">';
-      h+=ev.image?'<img class="thumb" src="'+esc(ev.image)+'" alt="" loading="lazy">':'<span class="no-thumb"></span>';
       h+='<span class="past-body">';
       h+='<p class="past-title">'+esc(ev.title)+'</p>';
       h+='<div class="past-meta">';
