@@ -46,16 +46,6 @@ export default {
     if (url.pathname === "/api/past") {
       return jsonResponse(await getEvents(env, ctx, demo, "past", noCache));
     }
-    if (url.pathname === "/api/debug-description") {
-      const id = url.searchParams.get("id");
-      try {
-        const res = await ebFetch(`/events/${id}/description/`, env);
-        const html = (res && res.description && res.description.html) || "";
-        return jsonResponse({ ok: true, length: html.length, htmlSample: html.slice(0, 500) });
-      } catch (err) {
-        return jsonResponse({ ok: false, error: String((err && err.message) || err) });
-      }
-    }
     if (url.pathname === "/past") {
       return htmlResponse(page("past"));
     }
@@ -142,19 +132,7 @@ async function getEvents(env, ctx, demo, mode, noCache) {
       orgId = fallbackId;
       res = await ebFetch(`/organizations/${orgId}/events/?${query}`, env);
     }
-    // The "logo" field is the event's hero image, but for events where the
-    // organizer never set a custom one, Eventbrite silently substitutes the
-    // organization's default banner - so every event ends up with the same
-    // picture. The real per-event photo usually lives inline in the event's
-    // description instead, so prefer that when one is present.
-    const events = await Promise.all(
-      (res.events || []).map(async (e) => {
-        const item = slim(e);
-        const descImage = await firstDescriptionImage(e.id, env);
-        if (descImage) item.image = descImage;
-        return item;
-      })
-    );
+    const events = (res.events || []).map(slim);
     const payload = { ok: true, orgUrl: ORG_PAGE, events };
 
     try {
@@ -184,27 +162,6 @@ async function getEvents(env, ctx, demo, mode, noCache) {
           ". It likely belongs to a different Eventbrite account."
         : "Could not reach Eventbrite: " + String((err && err.message) || err),
     };
-  }
-}
-
-/** First <img src> in an event's description, if it has one. */
-async function firstDescriptionImage(eventId, env) {
-  try {
-    const res = await ebFetch(`/events/${eventId}/description/`, env);
-    const html = (res && res.description && res.description.html) || "";
-    if (!html) return "";
-    let found = "";
-    await new HTMLRewriter()
-      .on("img", {
-        element(el) {
-          if (!found) found = el.getAttribute("src") || "";
-        },
-      })
-      .transform(new Response(html))
-      .text();
-    return found;
-  } catch (e) {
-    return ""; // Non-fatal: slim() already picked a fallback image.
   }
 }
 
