@@ -329,14 +329,16 @@ function page(mode) {
 
   /* past adventures - no thumbnail column, text only (see CLAUDE.md gotcha
      on why there's no reliable per-event photo to show here yet). */
-  .past-item{display:block;padding:20px 0;
+  .past-item{display:block;padding:24px 0;
              border-top:1px solid var(--line);text-decoration:none;color:inherit}
   .past-item:first-of-type{border-top:0;padding-top:6px}
   .past-body{min-width:0}
   .past-title{font-family:var(--serif);font-weight:400;font-size:19px;line-height:1.35;margin:0}
   .past-item:hover .past-title{text-decoration:underline;text-underline-offset:4px}
-  /* Venue on the left, date on the right, sharing one line. */
-  .past-meta{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:6px}
+  /* Venue pinned left, date pinned right, sharing one line. Wraps
+     gracefully if the embed is too narrow to fit both. */
+  .past-meta{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;
+             gap:4px 16px;margin-top:10px}
   .past-where{margin:0;font-size:15px;color:var(--muted)}
   .past-date{margin:0;font-size:13px;color:var(--muted);white-space:nowrap}
 
