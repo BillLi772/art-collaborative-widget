@@ -36,12 +36,15 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const demo = url.searchParams.get("demo") === "1";
+    // Escape hatch for the 15-minute cache below, e.g. right after a deploy
+    // that changes what getEvents() fetches or returns.
+    const noCache = url.searchParams.get("nocache") === "1";
 
     if (url.pathname === "/api/next") {
-      return jsonResponse(await getEvents(env, ctx, demo, "upcoming"));
+      return jsonResponse(await getEvents(env, ctx, demo, "upcoming", noCache));
     }
     if (url.pathname === "/api/past") {
-      return jsonResponse(await getEvents(env, ctx, demo, "past"));
+      return jsonResponse(await getEvents(env, ctx, demo, "past", noCache));
     }
     if (url.pathname === "/past") {
       return htmlResponse(page("past"));
@@ -76,7 +79,7 @@ function htmlResponse(html) {
  * mode: "upcoming" -> live events, soonest first
  *       "past"     -> finished events, most recent first
  */
-async function getEvents(env, ctx, demo, mode) {
+async function getEvents(env, ctx, demo, mode, noCache) {
   if (demo) {
     return {
       ok: true,
@@ -100,8 +103,10 @@ async function getEvents(env, ctx, demo, mode) {
   const cacheKey = new Request("https://cache.local/art-collab/" + mode);
   try {
     cache = caches.default;
-    const hit = await cache.match(cacheKey);
-    if (hit) return await hit.json();
+    if (!noCache) {
+      const hit = await cache.match(cacheKey);
+      if (hit) return await hit.json();
+    }
   } catch (e) {
     cache = null; // Cache unavailable. Fall through to a live fetch.
   }
