@@ -107,12 +107,26 @@ async function getEvents(env, ctx, demo, mode) {
   }
 
   try {
-    const orgId = env.EVENTBRITE_ORG_ID || ORG_ID || (await firstOrgId(env));
     const query =
       mode === "past"
         ? "status=ended,completed&order_by=start_desc&expand=venue,logo&page_size=6"
         : "status=live&order_by=start_asc&expand=venue,logo&page_size=6";
-    const res = await ebFetch(`/organizations/${orgId}/events/?${query}`, env);
+
+    // Try the configured organization first. If the token belongs to a
+    // different Eventbrite account, that comes back as a 404 rather than an
+    // auth error - so fall back to whatever organization the token can
+    // actually see instead of showing an error to visitors.
+    let orgId = env.EVENTBRITE_ORG_ID || ORG_ID;
+    let res;
+    try {
+      res = await ebFetch(`/organizations/${orgId}/events/?${query}`, env);
+    } catch (err) {
+      if (!String(err && err.message).includes("404")) throw err;
+      const fallbackId = await firstOrgId(env);
+      if (fallbackId === orgId) throw err;
+      orgId = fallbackId;
+      res = await ebFetch(`/organizations/${orgId}/events/?${query}`, env);
+    }
     const events = (res.events || []).map(slim);
     const payload = { ok: true, orgUrl: ORG_PAGE, events };
 
@@ -137,7 +151,11 @@ async function getEvents(env, ctx, demo, mode) {
       ok: false,
       error: "eventbrite",
       orgUrl: ORG_PAGE,
-      message: "Could not reach Eventbrite: " + String((err && err.message) || err),
+      message: String((err && err.message) || err).includes("404")
+        ? "Eventbrite token does not have access to organization " +
+          (env.EVENTBRITE_ORG_ID || ORG_ID) +
+          ". It likely belongs to a different Eventbrite account."
+        : "Could not reach Eventbrite: " + String((err && err.message) || err),
     };
   }
 }
@@ -399,12 +417,13 @@ function renderPast(data){
 
 function render(data){
   var app=document.getElementById('app');
-  if(data&&data.ok===false&&MODE!=='past'){
-    app.innerHTML=card('<p class="eyebrow">Our Next Adventure</p><p class="setup">'+esc(data.message||'The calendar is unavailable right now.')+'</p>');
-    return;
-  }
+  /* If Eventbrite is unreachable or misconfigured, visitors must never see a
+     technical error on Judith's site. Fall back to the ordinary placeholder
+     and leave the real reason in the console for whoever maintains this. */
   if(data&&data.ok===false){
-    app.innerHTML=card('<p class="eyebrow">Explore Past Adventures</p><p class="setup">'+esc(data.message||'The calendar is unavailable right now.')+'</p>');
+    if(window.console&&console.warn){console.warn('Art Collaborative widget:',data.message||'unknown error');}
+    app.innerHTML=(MODE==='past')?renderPast({ok:true,orgUrl:(data&&data.orgUrl)||'https://www.eventbrite.com/o/the-art-collaborative-42441313023',events:[]})
+                                 :renderNext({ok:true,events:[]});
     return;
   }
   app.innerHTML=(MODE==='past')?renderPast(data):renderNext(data);
