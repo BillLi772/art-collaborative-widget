@@ -341,8 +341,9 @@ function page(mode) {
   .sub{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--ink);max-width:60ch}
   /* Separate from .actions (used by the live-event RSVP row, which should
      keep its natural position) - pins this button to the card's bottom
-     edge so it lands on the same line as Past Adventures' See Overview. */
-  .empty-actions{margin-top:auto;padding-top:26px}
+     edge so it lands on the same line as Past Adventures' See Overview,
+     and centers it the same way (text-align, since .btn is inline-block). */
+  .empty-actions{margin-top:auto;padding-top:26px;text-align:center}
   .subhead{margin:26px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
   .setup{margin:0;font-size:15px;color:var(--muted)}
 
