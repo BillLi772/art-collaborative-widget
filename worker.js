@@ -32,6 +32,12 @@ const CACHE_SECONDS = 900; // 15 minutes
 const ORG_ID = "42441313023";
 const ORG_PAGE = "https://www.eventbrite.com/o/the-art-collaborative-42441313023";
 
+// Shown in the empty-state "Next Gathering" card as a "see our most recent
+// event" link. Static, not pulled from the API - update by hand whenever a
+// newer past event should take its place.
+const RECENT_EVENT_URL =
+  "https://www.eventbrite.com/e/the-show-behind-the-show-tickets-1993357430735?aff=ebdsoporgprofile";
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -361,6 +367,7 @@ function page(mode) {
 <div id="app"></div>
 <script>
 var MODE=${JSON.stringify(mode)};
+var RECENT_EVENT_URL=${JSON.stringify(RECENT_EVENT_URL)};
 var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
@@ -385,7 +392,8 @@ function renderNext(data){
       '<p class="sub">We\u2019ll share the date and location as soon as they\u2019re set \u2014 join the mailing list below to hear first.</p>'+
       '<hr class="rule">'+
       '<p class="subhead">Stay Connected</p>'+
-      '<p class="sub">Join the Art Collaborative mailing list to be notified about upcoming events.</p>'
+      '<p class="sub">Join the Art Collaborative mailing list to be notified about upcoming events.</p>'+
+      '<div class="actions"><a class="btn" href="'+esc(RECENT_EVENT_URL)+'" target="_blank" rel="noopener">See Our Most Recent Event</a></div>'
     );
   }
   var ev=evs[0];
