@@ -339,6 +339,11 @@ function page(mode) {
   /* empty state */
   .msg{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.3;margin:0}
   .sub{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--ink);max-width:60ch}
+  /* Extra breathing room around the empty-state's first line of body text
+     specifically - .msg + .sub / .sub + .rule only match that one
+     paragraph, not the "Stay Connected" paragraph below it. */
+  .msg + .sub{margin-top:20px}
+  .sub + .rule{margin-top:36px}
   /* Separate from .actions (used by the live-event RSVP row, which should
      keep its natural position) - pins this button to the card's bottom
      edge so it lands on the same line as Past Adventures' See Overview,
