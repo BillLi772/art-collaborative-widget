@@ -382,7 +382,7 @@ function renderNext(data){
     return card(
       '<p class="eyebrow">Our Next Adventure</p>'+
       '<p class="msg">Details for our next event are forthcoming.</p>'+
-      '<p class="sub">Details about our next event are coming soon \u2014 please check back!</p>'+
+      '<p class="sub">We\u2019ll share the date and location as soon as they\u2019re set \u2014 join the mailing list below to hear first.</p>'+
       '<hr class="rule">'+
       '<p class="subhead">Stay Connected</p>'+
       '<p class="sub">Join the Art Collaborative mailing list to be notified about upcoming events.</p>'
