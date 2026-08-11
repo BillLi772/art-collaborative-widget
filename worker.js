@@ -294,13 +294,22 @@ function page(mode) {
     --accent:#5E5858;      /* links on hover */
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:transparent}
+  /* height:100% lets .placard below fill the iframe's own fixed height
+     (set in the Squarespace embed code), which is what makes pinning a
+     button to the card's bottom edge possible. */
+  html,body{margin:0;padding:0;background:transparent;height:100%}
+  #app{height:100%}
   /* No card, no border, no fill - the widget is part of the page. */
   body{font-family:var(--sans);font-weight:300;color:var(--ink);-webkit-font-smoothing:antialiased;
        font-size:16px;line-height:1.6}
 
-  /* Full width so it lines up with the paragraph above it. */
-  .placard{width:100%;max-width:none;margin:0;padding:0;background:none;border:0}
+  /* Full width so it lines up with the paragraph above it. A flex column
+     so a trailing button (margin-top:auto) can pin to the card's bottom
+     edge instead of sitting wherever the text above happens to end -
+     that's what lets the two cards' buttons land on the same line even
+     though they have very different amounts of content above them. */
+  .placard{width:100%;max-width:none;margin:0;padding:0;background:none;border:0;
+           min-height:100%;display:flex;flex-direction:column}
 
   .eyebrow{margin:0 0 18px;font-size:16px;font-weight:300;color:var(--muted)}
 
@@ -330,6 +339,10 @@ function page(mode) {
   /* empty state */
   .msg{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.3;margin:0}
   .sub{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--ink);max-width:60ch}
+  /* Separate from .actions (used by the live-event RSVP row, which should
+     keep its natural position) - pins this button to the card's bottom
+     edge so it lands on the same line as Past Adventures' See Overview. */
+  .empty-actions{margin-top:auto;padding-top:26px}
   .subhead{margin:26px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
   .setup{margin:0;font-size:15px;color:var(--muted)}
 
@@ -348,10 +361,11 @@ function page(mode) {
   .past-where{margin:0;font-size:15px;color:var(--muted)}
   .past-date{margin:0;font-size:13px;color:var(--muted);white-space:nowrap}
 
-  /* boxed live link, same shape as the Registration button */
-  /* display:table + margin:auto centers a fit-content element without
-     relying on a wrapping container. */
-  .boxlink{display:table;margin:26px auto 0;border:1px solid var(--ink);border-radius:6px;padding:22px 34px;
+  /* boxed live link, same shape as the Registration button. display:table +
+     margin-left/right:auto centers it; margin-top:auto (the .placard flex
+     column above) pins it to the card's bottom edge. */
+  .boxlink{display:table;margin-top:auto;margin-left:auto;margin-right:auto;
+           border:1px solid var(--ink);border-radius:6px;padding:22px 34px;
            text-decoration:none;color:var(--ink);font-size:16px;font-weight:300}
   .boxlink:hover{background:var(--ink);color:#fff}
 
@@ -393,7 +407,7 @@ function renderNext(data){
       '<hr class="rule">'+
       '<p class="subhead">Stay Connected</p>'+
       '<p class="sub">Join the Art Collaborative mailing list to be notified about upcoming events.</p>'+
-      '<div class="actions"><a class="btn" href="'+esc(RECENT_EVENT_URL)+'" target="_blank" rel="noopener">See Our Most Recent Event</a></div>'
+      '<div class="empty-actions"><a class="btn" href="'+esc(RECENT_EVENT_URL)+'" target="_blank" rel="noopener">See Our Most Recent Event</a></div>'
     );
   }
   var ev=evs[0];
