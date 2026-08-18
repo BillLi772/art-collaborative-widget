@@ -9,6 +9,11 @@
  *
  * Add ?demo=1 to any route to see sample data without the Eventbrite token.
  *
+ * / and /past render fully server-side: the Worker fetches Eventbrite and
+ * builds the final HTML before responding, so the card's content is there
+ * on first paint. There's no client-side fetch-then-render step, which
+ * used to show a blank card for a beat before the JS request resolved.
+ *
  * Secrets - set these in Cloudflare, never in this file:
  *   EVENTBRITE_TOKEN    required. The Private Token from Judith's Eventbrite
  *                       account (Account Settings > Developer Links > API Keys).
@@ -32,12 +37,6 @@ const CACHE_SECONDS = 900; // 15 minutes
 const ORG_ID = "42441313023";
 const ORG_PAGE = "https://www.eventbrite.com/o/the-art-collaborative-42441313023";
 
-// Shown in the empty-state "Next Gathering" card as a "see our most recent
-// event" link. Static, not pulled from the API - update by hand whenever a
-// newer past event should take its place.
-const RECENT_EVENT_URL =
-  "https://www.eventbrite.com/e/the-show-behind-the-show-tickets-1993357430735?aff=ebdsoporgprofile";
-
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -53,10 +52,10 @@ export default {
       return jsonResponse(await getEvents(env, ctx, demo, "past", noCache));
     }
     if (url.pathname === "/past") {
-      return htmlResponse(page("past"));
+      return htmlResponse(await page("past", env, ctx, demo, noCache));
     }
     if (url.pathname === "/" || url.pathname === "") {
-      return htmlResponse(page("next"));
+      return htmlResponse(await page("next", env, ctx, demo, noCache));
     }
     return new Response("Not found", { status: 404 });
   },
@@ -260,11 +259,149 @@ const SAMPLE_PAST = [
 ];
 
 /* ------------------------------------------------------------------ *
+ * HTML-building helpers. Plain functions (no DOM, no client JS) since
+ * the page is fully rendered here in the Worker before it's sent.
+ * ------------------------------------------------------------------ */
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function parts(s) {
+  if (!s || s.length < 16) return null;
+  const y = +s.slice(0, 4), mo = +s.slice(5, 7), da = +s.slice(8, 10), h = +s.slice(11, 13), mi = +s.slice(14, 16);
+  const wd = new Date(Date.UTC(y, mo - 1, da)).getUTCDay();
+  return { y, mo, da, h, mi, wd };
+}
+function t12(h, mi) {
+  const ap = h >= 12 ? "PM" : "AM";
+  let hh = h % 12;
+  if (hh === 0) hh = 12;
+  return hh + ":" + (mi < 10 ? "0" + mi : mi) + " " + ap;
+}
+function pad(n) {
+  return n < 10 ? "0" + n : "" + n;
+}
+function whenLine(ev) {
+  const s = parts(ev.start);
+  if (!s) return "";
+  let line = DAYS[s.wd] + ", " + MONTHS[s.mo - 1] + " " + s.da + ", " + s.y;
+  const e = parts(ev.end);
+  let st = t12(s.h, s.mi);
+  if (e && ev.end.slice(0, 10) === ev.start.slice(0, 10)) {
+    const et = t12(e.h, e.mi);
+    if (st.slice(-2) === et.slice(-2)) st = st.slice(0, -3);
+    line += " · " + st + "–" + et;
+  } else {
+    line += " · " + st;
+  }
+  return line;
+}
+function monthYear(ev) {
+  const s = parts(ev.start);
+  return s ? MONTHS[s.mo - 1] + " " + s.y : "";
+}
+function gcal(ev) {
+  const s = parts(ev.start), e = parts(ev.end) || s;
+  const d1 = "" + s.y + pad(s.mo) + pad(s.da) + "T" + pad(s.h) + pad(s.mi) + "00";
+  const d2 = "" + e.y + pad(e.mo) + pad(e.da) + "T" + pad(e.h) + pad(e.mi) + "00";
+  const loc = ev.venueName ? ev.venueName + (ev.address ? ", " + ev.address : "") : ev.address;
+  return (
+    "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" +
+    encodeURIComponent(ev.title) +
+    "&dates=" + d1 + "/" + d2 +
+    "&ctz=" + encodeURIComponent(ev.timezone || "America/Chicago") +
+    "&location=" + encodeURIComponent(loc || "") +
+    (ev.url ? "&details=" + encodeURIComponent("RSVP: " + ev.url) : "")
+  );
+}
+function mapsUrl(ev) {
+  const q = (ev.venueName ? ev.venueName + ", " : "") + (ev.address || "");
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+}
+function card(inner) {
+  return '<div class="placard">' + inner + "</div>";
+}
+
+/* ---- NEXT GATHERING ---- */
+function renderNext(data) {
+  const evs = (data && data.events) || [];
+  if (!evs.length) {
+    /* EMPTY STATE - wording approved by Judith. Edit here to change it. */
+    return card(
+      '<p class="eyebrow">Our Next Adventure</p>' +
+      '<p class="msg">Details for our next event are forthcoming.</p>' +
+      '<p class="sub">We’re finalizing the details and will post them here as soon as they’re confirmed.</p>' +
+      '<hr class="rule">' +
+      '<p class="subhead">Stay Connected</p>' +
+      '<p class="sub">Join the Art Collaborative mailing list to be notified about upcoming events.</p>'
+    );
+  }
+  const ev = evs[0];
+  let h = '<p class="eyebrow">Our Next Adventure</p>';
+  h += '<h1 class="title"><a href="' + esc(ev.url) + '" target="_blank" rel="noopener">' + esc(ev.title) + "</a></h1>";
+  if (ev.summary) h += '<p class="blurb">' + esc(ev.summary) + "</p>";
+  h += '<hr class="rule">';
+  h += '<p class="when">' + esc(whenLine(ev)) + "</p>";
+  if (ev.venueName) h += '<p class="venue">' + esc(ev.venueName) + "</p>";
+  if (ev.address) h += '<p class="addr"><a href="' + esc(mapsUrl(ev)) + '" target="_blank" rel="noopener">' + esc(ev.address) + "</a></p>";
+  h += '<div class="actions"><a class="btn" href="' + esc(ev.url) + '" target="_blank" rel="noopener">RSVP on Eventbrite</a><a class="cal" href="' + esc(gcal(ev)) + '" target="_blank" rel="noopener">Add to calendar</a></div>';
+  return card(h);
+}
+
+/* ---- PAST ADVENTURES ---- */
+function renderPast(data) {
+  const evs = ((data && data.events) || []).slice(0, 3);
+  let h = '<p class="eyebrow">Explore Past Adventures</p>';
+  h += '<h1 class="title">Overview of past Collaborative adventures</h1>';
+  if (!evs.length) {
+    h += '<p class="blurb">A look back at where the Collaborative has been.</p>';
+  } else {
+    h += '<div style="margin-top:18px">';
+    for (let i = 0; i < evs.length; i++) {
+      const ev = evs[i];
+      h += '<a class="past-item" href="' + esc(ev.url) + '" target="_blank" rel="noopener">';
+      h += '<span class="past-body">';
+      h += '<p class="past-title">' + esc(ev.title) + "</p>";
+      h += '<div class="past-meta">';
+      h += ev.venueName ? '<span class="past-where">' + esc(ev.venueName) + "</span>" : "<span></span>";
+      h += '<span class="past-date">' + esc(monthYear(ev)) + "</span>";
+      h += "</div>";
+      h += "</span></a>";
+    }
+    h += "</div>";
+  }
+  return card(h);
+}
+
+/* ------------------------------------------------------------------ *
  * The widget page. Both cards share one stylesheet so they sit side
  * by side looking like a matched pair. Colors and fonts live in the
  * :root variables; change a hex code and redeploy.
  * ------------------------------------------------------------------ */
-function page(mode) {
+async function page(mode, env, ctx, demo, noCache) {
+  const data = await getEvents(env, ctx, demo, mode === "past" ? "past" : "upcoming", noCache);
+  let inner;
+  if (data && data.ok === false) {
+    // If Eventbrite is unreachable or misconfigured, visitors must never
+    // see a technical error on Judith's site. Fall back to the ordinary
+    // placeholder and leave the real reason in the Worker's logs.
+    console.warn("Art Collaborative widget:", data.message || "unknown error");
+    inner =
+      mode === "past"
+        ? renderPast({ ok: true, orgUrl: data.orgUrl || ORG_PAGE, events: [] })
+        : renderNext({ ok: true, events: [] });
+  } else {
+    inner = mode === "past" ? renderPast(data) : renderNext(data);
+  }
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -294,22 +431,13 @@ function page(mode) {
     --accent:#5E5858;      /* links on hover */
   }
   *{box-sizing:border-box}
-  /* height:100% lets .placard below fill the iframe's own fixed height
-     (set in the Squarespace embed code), which is what makes pinning a
-     button to the card's bottom edge possible. */
-  html,body{margin:0;padding:0;background:transparent;height:100%}
-  #app{height:100%}
+  html,body{margin:0;padding:0;background:transparent}
   /* No card, no border, no fill - the widget is part of the page. */
   body{font-family:var(--sans);font-weight:300;color:var(--ink);-webkit-font-smoothing:antialiased;
        font-size:16px;line-height:1.6}
 
-  /* Full width so it lines up with the paragraph above it. A flex column
-     so a trailing button (margin-top:auto) can pin to the card's bottom
-     edge instead of sitting wherever the text above happens to end -
-     that's what lets the two cards' buttons land on the same line even
-     though they have very different amounts of content above them. */
-  .placard{width:100%;max-width:none;margin:0;padding:0;background:none;border:0;
-           min-height:100%;display:flex;flex-direction:column}
+  /* Full width so it lines up with the paragraph above it. */
+  .placard{width:100%;max-width:none;margin:0;padding:0;background:none;border:0}
 
   .eyebrow{margin:0 0 18px;font-size:16px;font-weight:300;color:var(--muted)}
 
@@ -344,11 +472,6 @@ function page(mode) {
      paragraph, not the "Stay Connected" paragraph below it. */
   .msg + .sub{margin-top:20px}
   .sub + .rule{margin-top:36px}
-  /* Separate from .actions (used by the live-event RSVP row, which should
-     keep its natural position) - pins this button to the card's bottom
-     edge so it lands on the same line as Past Adventures' See Overview,
-     and centers it the same way (text-align, since .btn is inline-block). */
-  .empty-actions{margin-top:auto;padding-top:26px;text-align:center}
   .subhead{margin:26px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
   .setup{margin:0;font-size:15px;color:var(--muted)}
 
@@ -367,14 +490,6 @@ function page(mode) {
   .past-where{margin:0;font-size:15px;color:var(--muted)}
   .past-date{margin:0;font-size:13px;color:var(--muted);white-space:nowrap}
 
-  /* boxed live link, same shape as the Registration button. display:table +
-     margin-left/right:auto centers it; margin-top:auto (the .placard flex
-     column above) pins it to the card's bottom edge. */
-  .boxlink{display:table;margin-top:auto;margin-left:auto;margin-right:auto;
-           border:1px solid var(--ink);border-radius:6px;padding:22px 34px;
-           text-decoration:none;color:var(--ink);font-size:16px;font-weight:300}
-  .boxlink:hover{background:var(--ink);color:#fff}
-
   @media (max-width:600px){
     .title,.msg{font-size:22px}
     .past-title{font-size:17px}
@@ -384,97 +499,7 @@ function page(mode) {
 </style>
 </head>
 <body>
-<div id="app"></div>
-<script>
-var MODE=${JSON.stringify(mode)};
-var RECENT_EVENT_URL=${JSON.stringify(RECENT_EVENT_URL)};
-var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-
-function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function parts(s){if(!s||s.length<16)return null;var y=+s.slice(0,4),mo=+s.slice(5,7),da=+s.slice(8,10),h=+s.slice(11,13),mi=+s.slice(14,16);var wd=new Date(Date.UTC(y,mo-1,da)).getUTCDay();return{y:y,mo:mo,da:da,h:h,mi:mi,wd:wd};}
-function t12(h,mi){var ap=h>=12?'PM':'AM';var hh=h%12;if(hh===0)hh=12;return hh+':'+(mi<10?'0'+mi:mi)+' '+ap;}
-function pad(n){return n<10?'0'+n:''+n;}
-function whenLine(ev){var s=parts(ev.start);if(!s)return'';var line=DAYS[s.wd]+', '+MONTHS[s.mo-1]+' '+s.da+', '+s.y;var e=parts(ev.end);var st=t12(s.h,s.mi);if(e&&ev.end.slice(0,10)===ev.start.slice(0,10)){var et=t12(e.h,e.mi);if(st.slice(-2)===et.slice(-2)){st=st.slice(0,-3);}line+=' \\u00B7 '+st+'\\u2013'+et;}else{line+=' \\u00B7 '+st;}return line;}
-function monthYear(ev){var s=parts(ev.start);return s?MONTHS[s.mo-1]+' '+s.y:'';}
-function gcal(ev){var s=parts(ev.start),e=parts(ev.end)||s;var d1=''+s.y+pad(s.mo)+pad(s.da)+'T'+pad(s.h)+pad(s.mi)+'00';var d2=''+e.y+pad(e.mo)+pad(e.da)+'T'+pad(e.h)+pad(e.mi)+'00';var loc=ev.venueName?ev.venueName+(ev.address?', '+ev.address:''):ev.address;return'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(ev.title)+'&dates='+d1+'/'+d2+'&ctz='+encodeURIComponent(ev.timezone||'America/Chicago')+'&location='+encodeURIComponent(loc||'')+(ev.url?'&details='+encodeURIComponent('RSVP: '+ev.url):'');}
-function mapsUrl(ev){var q=(ev.venueName?ev.venueName+', ':'')+(ev.address||'');return'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);}
-function card(inner){return'<div class="placard reveal">'+inner+'</div>';}
-
-/* ---- NEXT GATHERING ---- */
-function renderNext(data){
-  var evs=(data&&data.events)||[];
-  if(!evs.length){
-    /* EMPTY STATE - wording approved by Judith. Edit here to change it. */
-    return card(
-      '<p class="eyebrow">Our Next Adventure</p>'+
-      '<p class="msg">Details for our next event are forthcoming.</p>'+
-      '<p class="sub">We\u2019re finalizing the details and will post them here as soon as they\u2019re confirmed. In the meantime, take a look at our most recent gathering below.</p>'+
-      '<hr class="rule">'+
-      '<p class="subhead">Stay Connected</p>'+
-      '<p class="sub">Join the Art Collaborative mailing list to be notified about upcoming events.</p>'+
-      '<div class="empty-actions"><a class="btn" href="'+esc(RECENT_EVENT_URL)+'" target="_blank" rel="noopener">See Our Most Recent Event</a></div>'
-    );
-  }
-  var ev=evs[0];
-  var h='<p class="eyebrow">Our Next Adventure</p>';
-  h+='<h1 class="title"><a href="'+esc(ev.url)+'" target="_blank" rel="noopener">'+esc(ev.title)+'</a></h1>';
-  if(ev.summary){h+='<p class="blurb">'+esc(ev.summary)+'</p>';}
-  h+='<hr class="rule">';
-  h+='<p class="when">'+esc(whenLine(ev))+'</p>';
-  if(ev.venueName){h+='<p class="venue">'+esc(ev.venueName)+'</p>';}
-  if(ev.address){h+='<p class="addr"><a href="'+esc(mapsUrl(ev))+'" target="_blank" rel="noopener">'+esc(ev.address)+'</a></p>';}
-  h+='<div class="actions"><a class="btn" href="'+esc(ev.url)+'" target="_blank" rel="noopener">RSVP on Eventbrite</a><a class="cal" href="'+esc(gcal(ev))+'" target="_blank" rel="noopener">Add to calendar</a></div>';
-  return card(h);
-}
-
-/* ---- PAST ADVENTURES ---- */
-function renderPast(data){
-  var evs=((data&&data.events)||[]).slice(0,3);
-  var org=(data&&data.orgUrl)||'https://www.eventbrite.com';
-  var h='<p class="eyebrow">Explore Past Adventures</p>';
-  h+='<h1 class="title">Overview of past Collaborative adventures</h1>';
-  if(!evs.length){
-    h+='<p class="blurb">A look back at where the Collaborative has been.</p>';
-  }else{
-    h+='<div style="margin-top:18px">';
-    for(var i=0;i<evs.length;i++){
-      var ev=evs[i];
-      h+='<a class="past-item" href="'+esc(ev.url)+'" target="_blank" rel="noopener">';
-      h+='<span class="past-body">';
-      h+='<p class="past-title">'+esc(ev.title)+'</p>';
-      h+='<div class="past-meta">';
-      h+=ev.venueName?'<span class="past-where">'+esc(ev.venueName)+'</span>':'<span></span>';
-      h+='<span class="past-date">'+esc(monthYear(ev))+'</span>';
-      h+='</div>';
-      h+='</span></a>';
-    }
-    h+='</div>';
-  }
-  h+='<a class="boxlink" href="'+esc(org)+'" target="_blank" rel="noopener">See Overview</a>';
-  return card(h);
-}
-
-function render(data){
-  var app=document.getElementById('app');
-  /* If Eventbrite is unreachable or misconfigured, visitors must never see a
-     technical error on Judith's site. Fall back to the ordinary placeholder
-     and leave the real reason in the console for whoever maintains this. */
-  if(data&&data.ok===false){
-    if(window.console&&console.warn){console.warn('Art Collaborative widget:',data.message||'unknown error');}
-    app.innerHTML=(MODE==='past')?renderPast({ok:true,orgUrl:(data&&data.orgUrl)||'https://www.eventbrite.com/o/the-art-collaborative-42441313023',events:[]})
-                                 :renderNext({ok:true,events:[]});
-    return;
-  }
-  app.innerHTML=(MODE==='past')?renderPast(data):renderNext(data);
-}
-
-var demo=/(^|[?&])demo=1(&|$)/.test(location.search);
-fetch('/api/'+(MODE==='past'?'past':'next')+(demo?'?demo=1':''))
-  .then(function(r){return r.json();})
-  .then(render)
-  .catch(function(){render({ok:false,message:'Could not load the calendar.'});});
-</script>
+<div id="app">${inner}</div>
 </body>
 </html>`;
 }
