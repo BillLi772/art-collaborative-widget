@@ -341,7 +341,8 @@ function renderNext(data) {
       '<p class="sub">We’re finalizing the details and will post them here as soon as they’re confirmed.</p>' +
       '<hr class="rule">' +
       '<p class="subhead">Stay Connected</p>' +
-      '<p class="sub">Join the Art Collaborative mailing list to be notified about upcoming events.</p>'
+      '<p class="sub">Join the Art Collaborative mailing list to be notified about upcoming events.</p>' +
+      '<p class="sub">You can also follow us on <a href="' + esc(ORG_PAGE) + '" target="_blank" rel="noopener">Eventbrite</a> to catch the latest updates and news.</p>'
     );
   }
   const ev = evs[0];
@@ -467,6 +468,8 @@ async function page(mode, env, ctx, demo, noCache) {
   /* empty state */
   .msg{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.3;margin:0}
   .sub{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--ink);max-width:60ch}
+  .sub a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
+  .sub a:hover{border-bottom-color:var(--ink)}
   /* Extra breathing room around the empty-state's first line of body text
      specifically - .msg + .sub / .sub + .rule only match that one
      paragraph, not the "Stay Connected" paragraph below it. */
