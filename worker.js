@@ -342,6 +342,8 @@ function renderNext(data) {
       '<hr class="rule">' +
       '<p class="subhead">Stay Connected</p>' +
       '<p class="sub">Join the Art Collaborative mailing list to be notified about upcoming events.</p>' +
+      '<hr class="rule">' +
+      '<p class="subhead">Follow Us</p>' +
       '<p class="sub">You can also follow us on <a href="' + esc(ORG_PAGE) + '" target="_blank" rel="noopener">Eventbrite</a> to catch the latest updates and news.</p>'
     );
   }
