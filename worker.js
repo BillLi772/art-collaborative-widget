@@ -473,10 +473,12 @@ async function page(mode, env, ctx, demo, noCache) {
   .sub a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
   .sub a:hover{border-bottom-color:var(--ink)}
   .msg + .sub{margin-top:14px}
-  /* Now separates two sections (Stay Connected / Follow Us), not just
-     one - kept tight so the card doesn't run longer than Past Adventures. */
-  .sub + .rule{margin-top:22px}
-  .subhead{margin:20px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
+  /* Nudges the two dividers to line up with Past Adventures' item
+     dividers - tuned by measuring both cards' actual divider positions,
+     not guessed. */
+  .msg + .sub + .rule{margin-top:40px}
+  .subhead + .sub + .rule{margin-top:22px}
+  .subhead{margin:12px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
   .setup{margin:0;font-size:15px;color:var(--muted)}
 
   /* past adventures - no thumbnail column, text only (see CLAUDE.md gotcha
