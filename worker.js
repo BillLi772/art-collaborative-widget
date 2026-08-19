@@ -477,7 +477,7 @@ async function page(mode, env, ctx, demo, noCache) {
      dividers - tuned by measuring both cards' actual divider positions,
      not guessed. */
   .msg + .sub + .rule{margin-top:40px}
-  .subhead + .sub + .rule{margin-top:-6px}
+  .subhead + .sub + .rule{margin-top:22px}
   .subhead{margin:12px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
   .setup{margin:0;font-size:15px;color:var(--muted)}
 
