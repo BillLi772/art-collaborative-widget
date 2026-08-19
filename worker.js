@@ -472,15 +472,17 @@ async function page(mode, env, ctx, demo, noCache) {
   .sub{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--ink);max-width:60ch}
   .sub a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
   .sub a:hover{border-bottom-color:var(--ink)}
-  .msg + .sub{margin-top:14px}
-  /* Nudges the two dividers to line up with Past Adventures' item
-     dividers - tuned by measuring both cards' actual divider positions,
-     not guessed. */
-  .msg + .sub + .rule{margin-top:40px}
-  /* Pixel-perfect alignment with Past Adventures' second divider would
-     require less space than this text needs to breathe - readability
-     wins, so this is a small safe gap, not an exact match. */
-  .subhead + .sub + .rule{margin-top:6px}
+  /* Centers the first paragraph between the heading and the divider
+     below it (was 14px/40px - text sat too close to the heading). */
+  .msg + .sub{margin-top:27px}
+  .msg + .sub + .rule{margin-top:27px}
+  /* Divider lines keep their exact position (each pair below sums to
+     the same total as before) - this just shifts the "Stay Connected"
+     and "Follow Us" blocks up a hair inside their unchanged span,
+     using :has() to only touch the empty-state's rules, not the
+     live-event card's rule-to-.when gap. */
+  .rule:has(+ .subhead){margin-bottom:14px}
+  .subhead + .sub + .rule{margin-top:14px}
   .subhead{margin:12px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
   .setup{margin:0;font-size:15px;color:var(--muted)}
 
