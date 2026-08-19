@@ -450,7 +450,7 @@ async function page(mode, env, ctx, demo, noCache) {
   .title a:hover{text-decoration:underline;text-underline-offset:4px}
 
   .blurb{margin:14px 0 0;font-size:16px;line-height:1.6;color:var(--ink);max-width:60ch}
-  .rule{border:0;border-top:1px solid var(--ink);width:100%;margin:26px 0 22px}
+  .rule{border:0;border-top:1px solid var(--line);width:100%;margin:26px 0 22px}
 
   .when{margin:0 0 10px;font-size:16px;font-weight:400}
   .venue{margin:0 0 4px;font-size:13px;font-weight:400;color:var(--muted)}
