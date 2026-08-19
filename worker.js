@@ -472,12 +472,11 @@ async function page(mode, env, ctx, demo, noCache) {
   .sub{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--ink);max-width:60ch}
   .sub a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
   .sub a:hover{border-bottom-color:var(--ink)}
-  /* Extra breathing room around the empty-state's first line of body text
-     specifically - .msg + .sub / .sub + .rule only match that one
-     paragraph, not the "Stay Connected" paragraph below it. */
-  .msg + .sub{margin-top:20px}
-  .sub + .rule{margin-top:36px}
-  .subhead{margin:26px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
+  .msg + .sub{margin-top:14px}
+  /* Now separates two sections (Stay Connected / Follow Us), not just
+     one - kept tight so the card doesn't run longer than Past Adventures. */
+  .sub + .rule{margin-top:22px}
+  .subhead{margin:20px 0 8px;font-size:16px;font-weight:300;color:var(--muted)}
   .setup{margin:0;font-size:15px;color:var(--muted)}
 
   /* past adventures - no thumbnail column, text only (see CLAUDE.md gotcha
